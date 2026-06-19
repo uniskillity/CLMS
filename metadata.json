@@ -1,0 +1,6 @@
+{
+  "name": "Campus Library Management System",
+  "description": "An academic web-based prototype designed for automative book cataloging, member registration, issue/return logs, fine calculations, and analytical reports for CS3140.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
