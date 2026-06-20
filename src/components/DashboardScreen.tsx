@@ -143,6 +143,155 @@ export default function DashboardScreen({
         </div>
       </div>
 
+      {/* Library Visual Analytics Section */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Dynamic Category Inventory Distribution (Bar Chart) */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs lg:col-span-2 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div>
+                <h3 className="font-display font-semibold text-slate-900 text-sm">Inventory Distribution by Category</h3>
+                <p className="text-slate-400 text-[11px]">Total copies stocked per academic discipline</p>
+              </div>
+              <span className="text-[10px] bg-blue-50 text-blue-900 px-2 py-0.5 rounded font-mono font-semibold">
+                {books.length} Titles
+              </span>
+            </div>
+
+            {/* Pure Responsive SVG Bar Chart */}
+            <div className="relative h-48 w-full mt-2">
+              {(() => {
+                const map: Record<string, number> = {};
+                books.forEach(b => {
+                  map[b.category] = (map[b.category] || 0) + b.totalCopies;
+                });
+                const entries = Object.entries(map);
+                const maxVal = Math.max(...entries.map(([, count]) => count), 1);
+
+                return (
+                  <div className="h-full flex items-end justify-between space-x-4 pb-6 pt-2">
+                    {entries.map(([categoryName, totalCopiesCount]) => {
+                      const pct = (totalCopiesCount / maxVal) * 100;
+                      return (
+                        <div key={categoryName} className="flex-1 flex flex-col items-center group h-full justify-end relative">
+                          {/* Tooltip Overlay */}
+                          <div className="absolute -top-7 opacity-0 group-hover:opacity-100 transition-opacity bg-slate-900 text-white text-[10px] font-bold font-mono px-2 py-0.5 rounded shadow-md pointer-events-none z-10 whitespace-nowrap">
+                            {totalCopiesCount} Volumes
+                          </div>
+                          
+                          {/* Interactive Bar */}
+                          <div 
+                            style={{ height: `${pct}%` }}
+                            className="w-full bg-slate-100 hover:bg-blue-950 rounded-t-lg transition-all duration-300 relative overflow-hidden"
+                          >
+                            <div className="absolute inset-0 bg-linear-to-t from-blue-900/10 to-transparent"></div>
+                          </div>
+
+                          {/* Label info */}
+                          <span className="text-[9px] font-semibold text-slate-500 mt-2 truncate w-full text-center group-hover:text-blue-950" title={categoryName}>
+                            {categoryName}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                );
+              })()}
+            </div>
+          </div>
+
+          <div className="flex items-center space-x-4 mt-2 pt-3 border-t border-slate-50 text-[10px] text-slate-400">
+            <span className="inline-flex items-center">
+              <span className="w-2 h-2 rounded bg-blue-950 mr-1.5 shrink-0"></span> Current Stock Count
+            </span>
+            <span>&bull; Hover bar to view quantities</span>
+          </div>
+        </div>
+
+        {/* Dynamic Financial Performance (Circular Donut Chart) */}
+        <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-xs flex flex-col justify-between">
+          <div>
+            <h3 className="font-display font-semibold text-slate-900 text-sm mb-1">Fine Recovery & Status</h3>
+            <p className="text-slate-400 text-[11px] mb-4">Ratio of collected vs outstanding penance receipts</p>
+
+            {(() => {
+              const collected = transactions
+                .filter(t => t.fineStatus === 'Paid')
+                .reduce((acc, t) => acc + t.fineAmount, 0);
+
+              const outstanding = unpaidFinesTotal;
+              const totalFinesAccrued = collected + outstanding;
+
+              // Donut calculations
+              const radius = 36;
+              const circumference = 2 * Math.PI * radius;
+              const collectedPct = totalFinesAccrued > 0 ? (collected / totalFinesAccrued) * 100 : 100;
+              const strokeDashoffset = totalFinesAccrued > 0 
+                ? circumference - (collectedPct / 100) * circumference 
+                : 0;
+
+              return (
+                <div className="flex flex-col items-center justify-center p-2 relative">
+                  {/* Circular donut representation */}
+                  <div className="relative w-28 h-28 flex items-center justify-center">
+                    <svg className="w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                      {/* Background Circle */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r={radius}
+                        className="stroke-rose-100 fill-transparent"
+                        strokeWidth="10"
+                      />
+                      {/* Foreground Circle */}
+                      <circle
+                        cx="50"
+                        cy="50"
+                        r={radius}
+                        className="stroke-emerald-500 fill-transparent transition-all duration-500"
+                        strokeWidth="10"
+                        strokeDasharray={circumference}
+                        strokeDashoffset={strokeDashoffset}
+                        strokeLinecap="round"
+                      />
+                    </svg>
+                    {/* Percent Center Details */}
+                    <div className="absolute text-center">
+                      <span className="block text-base font-bold text-slate-900 font-mono">
+                        {totalFinesAccrued > 0 ? `${Math.round(collectedPct)}%` : '100%'}
+                      </span>
+                      <span className="block text-[8px] uppercase tracking-wider font-bold text-slate-400">Recovery</span>
+                    </div>
+                  </div>
+
+                  {/* Absolute Details list */}
+                  <div className="w-full mt-5 space-y-2">
+                    <div className="flex items-center justify-between text-xs font-semibold">
+                      <span className="inline-flex items-center text-emerald-600">
+                        <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 mr-2 shrink-0"></span> Cleared Receipts
+                      </span>
+                      <span className="text-slate-900 font-mono">Rs. {collected}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-semibold">
+                      <span className="inline-flex items-center text-rose-600">
+                        <span className="w-2.5 h-2.5 rounded-full bg-rose-100 border border-rose-300 mr-2 shrink-0"></span> Uncollected Fines
+                      </span>
+                      <span className="text-slate-900 font-mono">Rs. {outstanding}</span>
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+
+          <div className="pt-3 border-t border-slate-50 text-[10px] text-slate-400 text-center">
+            Total Accrued Penalty Pool: <strong className="text-slate-800">
+              Rs. {transactions.reduce((acc, t) => acc + t.fineAmount, 0)}
+            </strong>
+          </div>
+        </div>
+      </div>
+
       {/* Main Dashboard Tables Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Recently Issued Books Table */}

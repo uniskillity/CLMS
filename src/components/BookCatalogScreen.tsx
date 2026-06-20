@@ -25,6 +25,7 @@ export default function BookCatalogScreen({
   // Modal/Panel states
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
 
   // Form fields
   const [title, setTitle] = useState('');
@@ -202,12 +203,15 @@ export default function BookCatalogScreen({
                 className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden flex flex-col justify-between group hover:shadow-md transition-shadow duration-200"
               >
                 {/* Book Header Image & Tag Overlay */}
-                <div className="relative aspect-[3/4] bg-slate-50 flex items-center justify-center p-6 border-b border-slate-100 overflow-hidden">
+                <div 
+                  onClick={() => setSelectedBook(book)}
+                  className="relative aspect-[3/4] bg-slate-50 flex items-center justify-center p-6 border-b border-slate-100 overflow-hidden cursor-pointer hover:bg-slate-100/50 transition-colors group/cover"
+                >
                   {book.cover ? (
                     <img
                       src={book.cover}
                       alt={book.title}
-                      className="h-full object-cover rounded-md shadow-md group-hover:scale-[1.03] transition-transform duration-300"
+                      className="h-full object-cover rounded-md shadow-md group-hover/cover:scale-[1.03] transition-transform duration-300"
                       referrerPolicy="no-referrer"
                     />
                   ) : (
@@ -226,18 +230,21 @@ export default function BookCatalogScreen({
                     )}
                   </div>
                   {/* ID Overlay Tag */}
-                  <div className="absolute top-3 left-3 bg-slate-900/85 backdrop-blur-xs text-white font-mono text-[9px] px-2 py-0.5 rounded-md font-semibold">
+                  <div className="absolute top-3 left-3 bg-slate-900/85 backdrop-blur-xs text-white font-mono text-[9px] px-2 py-0.5 rounded-md font-semibold font-mono">
                     {book.bookId}
                   </div>
                 </div>
 
                 {/* Card Body */}
                 <div className="p-4 flex-1 flex flex-col justify-between">
-                  <div className="space-y-1.5">
+                  <div 
+                    onClick={() => setSelectedBook(book)}
+                    className="space-y-1.5 cursor-pointer group/title"
+                  >
                     <span className="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-semibold bg-slate-100 text-slate-600">
                       {book.category}
                     </span>
-                    <h4 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2" title={book.title}>
+                    <h4 className="font-semibold text-slate-900 text-sm leading-snug line-clamp-2 group-hover/title:text-blue-900 transition-colors" title={book.title}>
                       {book.title}
                     </h4>
                     <p className="text-slate-400 text-[11px] font-medium">{book.author}</p>
@@ -307,7 +314,10 @@ export default function BookCatalogScreen({
                     <tr key={book.bookId} className="hover:bg-slate-50/30 transition-colors">
                       {/* Cover block */}
                       <td className="px-6 py-3">
-                        <div className="w-9 h-12 bg-slate-100 rounded overflow-hidden shadow-xs border border-slate-200 flex items-center justify-center">
+                        <div 
+                          onClick={() => setSelectedBook(book)}
+                          className="w-9 h-12 bg-slate-100 rounded overflow-hidden shadow-xs border border-slate-200 flex items-center justify-center cursor-pointer hover:opacity-80 transition-opacity"
+                        >
                           {book.cover ? (
                             <img 
                               src={book.cover} 
@@ -321,10 +331,15 @@ export default function BookCatalogScreen({
                         </div>
                       </td>
                       {/* ID */}
-                      <td className="px-6 py-3 font-mono text-slate-500 font-semibold text-[11px]">{book.bookId}</td>
+                      <td className="px-6 py-3 font-mono text-slate-500 font-semibold text-[11px] font-mono">{book.bookId}</td>
                       {/* Title & Author */}
                       <td className="px-6 py-3">
-                        <div className="font-semibold text-slate-800 text-sm max-w-sm leading-snug line-clamp-2">{book.title}</div>
+                        <div 
+                          onClick={() => setSelectedBook(book)}
+                          className="font-semibold text-slate-800 text-sm max-w-sm leading-snug line-clamp-2 cursor-pointer hover:text-blue-900 transition-colors"
+                        >
+                          {book.title}
+                        </div>
                         <div className="text-slate-400 text-[11px] mt-0.5 font-medium">{book.author}</div>
                       </td>
                       {/* Category */}
@@ -533,6 +548,151 @@ export default function BookCatalogScreen({
                   >
                     Save Specifications
                   </button>
+                </div>
+              </motion.div>
+            </div>
+          </div>
+        )}
+      </AnimatePresence>
+
+      {/* Selected Book Specifications Drawer Panel */}
+      <AnimatePresence>
+        {selectedBook && (
+          <div className="fixed inset-0 z-50 overflow-hidden">
+            {/* Backdrop */}
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedBook(null)}
+              className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs"
+            />
+            
+            {/* Container */}
+            <div className="absolute inset-y-0 right-0 max-w-full flex pl-10">
+              <motion.div 
+                initial={{ x: '100%' }}
+                animate={{ x: 0 }}
+                exit={{ x: '100%' }}
+                transition={{ type: 'spring', damping: 20, stiffness: 200 }}
+                className="w-screen max-w-md bg-white shadow-2xl flex flex-col justify-between"
+              >
+                {/* Header */}
+                <div className="px-6 py-5 bg-slate-900 text-white flex items-center justify-between">
+                  <div>
+                    <span className="text-[10px] bg-slate-800 text-slate-300 px-2 py-0.5 rounded font-mono font-bold">
+                      {selectedBook.bookId}
+                    </span>
+                    <h3 className="font-display font-semibold text-base mt-1 text-white">Book Information Sheet</h3>
+                  </div>
+                  <button 
+                    onClick={() => setSelectedBook(null)}
+                    className="p-1.5 text-slate-450 hover:text-white rounded-lg hover:bg-slate-800"
+                  >
+                    <X className="h-5 w-5" />
+                  </button>
+                </div>
+
+                {/* Details Body */}
+                <div className="flex-1 overflow-y-auto p-6 space-y-6">
+                  {/* Large Cover / Art */}
+                  <div className="aspect-[4/3] bg-slate-50 border border-slate-100 rounded-2xl flex items-center justify-center p-6 relative overflow-hidden shadow-xs">
+                    {selectedBook.cover ? (
+                      <img 
+                        src={selectedBook.cover} 
+                        alt={selectedBook.title} 
+                        className="h-full object-cover rounded-xl shadow-lg"
+                        referrerPolicy="no-referrer"
+                      />
+                    ) : (
+                      <BookOpen className="h-20 w-20 text-slate-200" />
+                    )}
+                  </div>
+
+                  {/* Core Titles */}
+                  <div className="space-y-2">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-semibold bg-blue-100 text-blue-900">
+                      {selectedBook.category}
+                    </span>
+                    <h4 className="text-lg font-bold text-slate-950 font-display leading-snug">{selectedBook.title}</h4>
+                    <p className="text-slate-500 text-xs font-semibold">Author: <span className="text-slate-800">{selectedBook.author}</span></p>
+                  </div>
+
+                  {/* Micro specs */}
+                  <div className="grid grid-cols-2 gap-4 pt-4 border-t border-slate-150">
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-105">
+                      <span className="block text-[10px] uppercase font-bold text-slate-400">Inventory Ratio</span>
+                      <span className="block text-sm font-bold text-slate-900 mt-1">
+                        {selectedBook.availableCopies} available
+                      </span>
+                      <span className="block text-[10px] text-slate-550 mt-0.5">out of {selectedBook.totalCopies} total</span>
+                    </div>
+
+                    <div className="p-3 bg-slate-50 rounded-xl border border-slate-105">
+                      <span className="block text-[10px] uppercase font-bold text-slate-400">Circulation Status</span>
+                      <span className="block mt-1 font-semibold">
+                        {selectedBook.availableCopies > 0 ? (
+                          <span className="text-emerald-650 text-xs font-bold inline-flex items-center">
+                            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 mr-1.5"></span> In Library Stock
+                          </span>
+                        ) : (
+                          <span className="text-rose-650 text-xs font-bold inline-flex items-center">
+                            <span className="w-1.5 h-1.5 rounded-full bg-rose-500 mr-1.5"></span> Fully Checkout out
+                          </span>
+                        )}
+                      </span>
+                      <span className="block text-[10px] text-slate-500 mt-0.5">Physical tracking spec</span>
+                    </div>
+                  </div>
+
+                  {/* Book Synopsis & Review Mock-Up */}
+                  <div className="space-y-2 pt-2">
+                    <h5 className="text-xs font-bold text-slate-850 uppercase tracking-wider">Catalogue Metadata Details</h5>
+                    <p className="text-slate-500 text-xs leading-relaxed">
+                      This volume is curated in our <strong>{selectedBook.category}</strong> curriculum section. It contains foundational academic guidance and comprehensive study specifications for undergrad coursework, conforming to standard reference guidelines.
+                    </p>
+                  </div>
+
+                  {/* Mock reviews */}
+                  <div className="bg-slate-50 rounded-xl p-4 border border-slate-105">
+                    <div className="flex items-center justify-between text-xs font-bold mb-2">
+                      <span className="text-slate-850">Average Rating</span>
+                      <span className="text-amber-500">★ 4.8 / 5.0 (Student polls)</span>
+                    </div>
+                    <p className="text-[11px] text-slate-450 italic">
+                      "Highly requested syllabus reference text. Updated index covers modern practical specifications."
+                    </p>
+                  </div>
+                </div>
+
+                {/* Footer buttons */}
+                <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-slate-50 shrink-0">
+                  <div className="text-[11px] text-slate-400">
+                    CS3140 Campus Logistics
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedBook(null)}
+                      className="px-4 py-2 border border-slate-200 text-slate-600 text-sm font-medium rounded-lg hover:bg-white cursor-pointer"
+                    >
+                      Close Details
+                    </button>
+                    {canManage && (
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const bookToEdit = selectedBook;
+                          setSelectedBook(null);
+                          handleOpenEdit(bookToEdit);
+                        }}
+                        className="px-4 py-2 bg-blue-950 hover:bg-blue-900 text-white text-sm font-medium rounded-lg cursor-pointer flex items-center space-x-1.5"
+                      >
+                        <Edit className="h-4 w-4" />
+                        <span>Edit specs</span>
+                      </button>
+                    )}
+                  </div>
                 </div>
               </motion.div>
             </div>
